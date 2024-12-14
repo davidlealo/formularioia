@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:formularioia/providers/form_state_provider.dart';
 
 class FormWidget extends StatefulWidget {
   @override
@@ -8,21 +10,25 @@ class FormWidget extends StatefulWidget {
 class _FormWidgetState extends State<FormWidget> {
   final TextEditingController titleController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
-  final List<TextEditingController> activityControllers = List.generate(4, (_) => TextEditingController());
+  final List<TextEditingController> activityControllers =
+      List.generate(4, (_) => TextEditingController());
   final TextEditingController commentsController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    // Escucha los cambios desde el estado global
-    FormStateProvider.addListener(updateFormFields);
+    // Escucha los cambios desde el estado global y actualiza los campos
+    final formState = Provider.of<FormStateProvider>(context, listen: false);
+    formState.addListener(updateFormFields);
   }
 
   void updateFormFields() {
+    // Obtén el estado actualizado y actualiza los campos del formulario
+    final formState = Provider.of<FormStateProvider>(context, listen: false);
     setState(() {
-      titleController.text = FormStateProvider.title ?? '';
-      descriptionController.text = FormStateProvider.description ?? '';
-      // Otros campos se actualizan aquí
+      titleController.text = formState.title ?? '';
+      descriptionController.text = formState.description ?? '';
+      // Puedes agregar lógica para las actividades si es necesario
     });
   }
 
@@ -34,10 +40,18 @@ class _FormWidgetState extends State<FormWidget> {
         TextField(
           controller: titleController,
           decoration: InputDecoration(labelText: 'Título'),
+          onChanged: (value) {
+            Provider.of<FormStateProvider>(context, listen: false)
+                .updateTitle(value);
+          },
         ),
         TextField(
           controller: descriptionController,
           decoration: InputDecoration(labelText: 'Descripción'),
+          onChanged: (value) {
+            Provider.of<FormStateProvider>(context, listen: false)
+                .updateDescription(value);
+          },
         ),
         for (int i = 0; i < 4; i++)
           Column(
@@ -47,15 +61,18 @@ class _FormWidgetState extends State<FormWidget> {
               TextField(
                 controller: activityControllers[i],
                 decoration: InputDecoration(labelText: 'Descripción'),
+                // Lógica adicional para actualizar actividades aquí
               ),
               TextField(
                 decoration: InputDecoration(labelText: 'Fecha'),
+                // Lógica adicional para actualizar fechas aquí
               ),
             ],
           ),
         TextField(
           controller: commentsController,
           decoration: InputDecoration(labelText: 'Comentarios'),
+          // Lógica para actualizar comentarios si es necesario
         ),
       ],
     );
@@ -63,7 +80,9 @@ class _FormWidgetState extends State<FormWidget> {
 
   @override
   void dispose() {
-    FormStateProvider.removeListener(updateFormFields);
+    // Elimina el listener al destruir el widget
+    final formState = Provider.of<FormStateProvider>(context, listen: false);
+    formState.removeListener(updateFormFields);
     super.dispose();
   }
 }

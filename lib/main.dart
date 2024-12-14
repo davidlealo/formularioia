@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:my_chat_form_app/screens/chat_form_screen.dart';
+import 'package:formularioia/screens/chat_form_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:my_chat_form_app/providers/form_state_provider.dart';
+import 'package:formularioia/providers/form_state_provider.dart';
 
 void main() {
   runApp(MyApp());

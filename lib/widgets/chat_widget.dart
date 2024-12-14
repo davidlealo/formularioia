@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // Importa Provider
+import 'package:formularioia/providers/form_state_provider.dart';
 
 class ChatWidget extends StatefulWidget {
   @override
@@ -25,8 +27,8 @@ class _ChatWidgetState extends State<ChatWidget> {
   }
 
   Future<String> sendToMistralAPI(String message) async {
-    // Aquí integras la llamada a la API de Mistral.
-    await Future.delayed(Duration(seconds: 1)); // Simular latencia
+    // Simula una llamada a la API de Mistral
+    await Future.delayed(Duration(seconds: 1)); // Simula latencia
     return "¡Título identificado: Proyecto X!";
   }
 
@@ -34,8 +36,10 @@ class _ChatWidgetState extends State<ChatWidget> {
     // Lógica para extraer datos relevantes y actualizar el formulario.
     if (response.contains("Título identificado")) {
       String title = response.split(": ")[1];
-      // Aquí debes usar un gestor de estado para actualizar el título.
-      FormStateProvider.updateTitle(title);
+
+      // Obtén la instancia del FormStateProvider y actualiza el título
+      final formState = Provider.of<FormStateProvider>(context, listen: false);
+      formState.updateTitle(title); // Actualiza el título en el proveedor
     }
   }
 

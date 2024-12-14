@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:my_chat_form_app/widgets/chat_widget.dart';
-import 'package:my_chat_form_app/widgets/form_widget.dart';
+import 'package:formularioia/widgets/chat_widget.dart';
+import 'package:formularioia/widgets/form_widget.dart';
 
 class ChatFormScreen extends StatelessWidget {
   @override

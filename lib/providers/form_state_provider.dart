@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 
-class FormStateProvider with ChangeNotifier {
+class FormStateProvider extends ChangeNotifier {
   String? title;
   String? description;
 
+  // Método para actualizar el título
   void updateTitle(String newTitle) {
     title = newTitle;
-    notifyListeners();
+    notifyListeners(); // Notifica a los widgets que están escuchando
   }
 
+  // Método para actualizar la descripción
   void updateDescription(String newDescription) {
     description = newDescription;
-    notifyListeners();
+    notifyListeners(); // Notifica a los widgets que están escuchando
   }
 }
