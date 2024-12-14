@@ -79,6 +79,9 @@ class FormStateProvider extends ChangeNotifier {
       case "comments":
         comments = value;
         break;
+      default:
+        print("Propiedad no válida: $propertyName"); // Log para depuración
+        return;
     }
     notifyListeners(); // Notifica a los widgets que escuchan cambios
   }
@@ -91,6 +94,48 @@ class FormStateProvider extends ChangeNotifier {
 
   void updateDescription(String newDescription) {
     description = newDescription;
+    notifyListeners();
+  }
+
+  void updateActivity(String activityName, String newDescription) {
+    switch (activityName) {
+      case "activity1":
+        activity1 = newDescription;
+        break;
+      case "activity2":
+        activity2 = newDescription;
+        break;
+      case "activity3":
+        activity3 = newDescription;
+        break;
+      case "activity4":
+        activity4 = newDescription;
+        break;
+      default:
+        print("Actividad no válida: $activityName");
+        return;
+    }
+    notifyListeners();
+  }
+
+  void updateDate(String dateName, String newDate) {
+    switch (dateName) {
+      case "date1":
+        date1 = newDate;
+        break;
+      case "date2":
+        date2 = newDate;
+        break;
+      case "date3":
+        date3 = newDate;
+        break;
+      case "date4":
+        date4 = newDate;
+        break;
+      default:
+        print("Fecha no válida: $dateName");
+        return;
+    }
     notifyListeners();
   }
 

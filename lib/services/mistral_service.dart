@@ -4,20 +4,11 @@ import 'package:http/http.dart' as http;
 import 'package:formularioia/providers/form_state_provider.dart';
 
 class MistralService {
-  final String apiUrl = 'https://api.mistral.com/v1/chat';
+  final String apiUrl = 'https://api.mistral.ai/v1/chat/completions';
 
-  Future<String> sendMessage(String userMessage, FormStateProvider formState) async {
-    try {
-      // Obtén la API key desde las variables de entorno
-      final apiKey = dotenv.env['API_KEY'];
-
-      // Verifica si la API key está configurada
-      if (apiKey == null || apiKey.isEmpty) {
-        throw Exception('API key is not defined in .env file');
-      }
-
-      // Prompt para guiar a Mistral
-      final prompt = '''
+  // Función para construir el prompt dinámico
+  String _buildPrompt(String userMessage, FormStateProvider formState) {
+    return '''
 Eres un asistente que ayuda a personalizar un formulario. El formulario tiene los siguientes campos:
 
 1. Título: ${formState.title ?? "Sin definir"}
@@ -40,34 +31,63 @@ Tú: "Campo actualizado: Título, Nuevo valor: Nuevo Proyecto."
 Aquí está la solicitud del usuario:
 "$userMessage"
 ''';
+  }
 
-      // Realiza la solicitud a la API
+  // Función para enviar el mensaje a Mistral
+  Future<String> sendMessage(String userMessage, FormStateProvider formState) async {
+    try {
+      // Obtén la API key desde las variables de entorno
+      final apiKey = dotenv.env['API_KEY'];
+
+      // Verifica si la API key está configurada
+      if (apiKey == null || apiKey.isEmpty) {
+        throw Exception('API key is not defined in .env file');
+      }
+
+      // Construye el prompt
+      final prompt = _buildPrompt(userMessage, formState);
+
+      // Construye el cuerpo de la solicitud
+      final requestBody = jsonEncode({
+        "messages": [
+          {"role": "system", "content": "Eres un asistente experto en formularios."},
+          {"role": "user", "content": prompt}
+        ],
+        "model": "mistral-large-latest",
+      });
+
+      // Realiza la solicitud HTTP POST
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $apiKey', // Incluye la API key en los headers
+          'Authorization': 'Bearer $apiKey',
         },
-        body: json.encode({'message': prompt}),
+        body: requestBody,
       );
 
-      // Manejo de la respuesta
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+      // Log para depuración
+      print("HTTP Status Code: ${response.statusCode}");
+      print("HTTP Response Body: ${response.body}");
 
-        // Verifica si la respuesta contiene el campo esperado
-        if (data.containsKey('response')) {
-          return data['response'];
+      // Procesa la respuesta de la API
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+
+        // Verifica si hay contenido en la respuesta
+        if (responseData['choices'] != null &&
+            responseData['choices'][0]['message']['content'] != null) {
+          return responseData['choices'][0]['message']['content'];
         } else {
-          throw Exception('Unexpected response format: ${response.body}');
+          throw Exception('Unexpected response format from API');
         }
       } else {
         throw Exception(
-            'Failed to send message: ${response.statusCode} - ${response.body}');
+            'API call failed with status code ${response.statusCode}: ${response.body}');
       }
     } catch (e) {
-      // Captura y devuelve cualquier error
-      return 'Error: $e';
+      print('Error en la llamada a Mistral: $e');
+      return 'Error: No se pudo procesar tu solicitud. Intenta nuevamente.';
     }
   }
 }
