@@ -57,7 +57,12 @@ class _ChatWidgetState extends State<ChatWidget> {
         "messages": [
           {
             "role": "user", // Define el rol como "user"
-            "content": message // El mensaje del usuario
+            "content": "Actualiza los campos del formulario según las instrucciones. Responde solo con el formato:\n\n"
+                "Campo actualizado: [nombre del campo], Nuevo valor: [valor proporcionado]\n\n"
+                "Por ejemplo:\n\n"
+                "Usuario: Quiero que el título sea 'Proyecto Frutal'.\n"
+                "Tú: Campo actualizado: Título, Nuevo valor: Proyecto Frutal.\n\n"
+                "Aquí está la instrucción del usuario:\n\n$message"
           }
         ]
       });
@@ -96,8 +101,8 @@ class _ChatWidgetState extends State<ChatWidget> {
   }
 
   void parseMessageAndUpdateForm(String response) {
-    final titleRegex = RegExp(r'Título identificado: (.+)');
-    final descriptionRegex = RegExp(r'Descripción actualizada a: (.+)');
+    final titleRegex = RegExp(r'Campo actualizado: Título, Nuevo valor: (.+)');
+    final descriptionRegex = RegExp(r'Campo actualizado: Descripción, Nuevo valor: (.+)');
 
     final titleMatch = titleRegex.firstMatch(response);
     final descriptionMatch = descriptionRegex.firstMatch(response);
