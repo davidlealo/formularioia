@@ -39,12 +39,14 @@ class FormStateProvider extends ChangeNotifier {
       case "comments":
         return comments;
       default:
+        print("Propiedad no válida solicitada: $propertyName");
         return null;
     }
   }
 
   // Método para establecer una propiedad por nombre
   void setProperty(String propertyName, String value) {
+    print("Actualizando propiedad $propertyName a: $value");
     switch (propertyName) {
       case "title":
         title = value;
@@ -80,24 +82,30 @@ class FormStateProvider extends ChangeNotifier {
         comments = value;
         break;
       default:
-        print("Propiedad no válida: $propertyName"); // Log para depuración
+        print("Propiedad no válida: $propertyName");
         return;
     }
-    notifyListeners(); // Notifica a los widgets que escuchan cambios
+    notifyListeners();
+    _printFormState();
   }
 
   // Métodos específicos para actualizar campos individuales
   void updateTitle(String newTitle) {
+    print("Método updateTitle llamado con valor: $newTitle");
     title = newTitle;
     notifyListeners();
+    _printFormState();
   }
 
   void updateDescription(String newDescription) {
+    print("Método updateDescription llamado con valor: $newDescription");
     description = newDescription;
     notifyListeners();
+    _printFormState();
   }
 
   void updateActivity(String activityName, String newDescription) {
+    print("Método updateActivity llamado para $activityName con valor: $newDescription");
     switch (activityName) {
       case "activity1":
         activity1 = newDescription;
@@ -116,9 +124,11 @@ class FormStateProvider extends ChangeNotifier {
         return;
     }
     notifyListeners();
+    _printFormState();
   }
 
   void updateDate(String dateName, String newDate) {
+    print("Método updateDate llamado para $dateName con valor: $newDate");
     switch (dateName) {
       case "date1":
         date1 = newDate;
@@ -137,10 +147,26 @@ class FormStateProvider extends ChangeNotifier {
         return;
     }
     notifyListeners();
+    _printFormState();
   }
 
   void updateComments(String newComments) {
+    print("Método updateComments llamado con valor: $newComments");
     comments = newComments;
     notifyListeners();
+    _printFormState();
+  }
+
+  // Método privado para imprimir el estado completo del formulario
+  void _printFormState() {
+    print("---- Estado del formulario actualizado ----");
+    print("Título: $title");
+    print("Descripción: $description");
+    print("Actividad 1: $activity1 (Fecha: $date1)");
+    print("Actividad 2: $activity2 (Fecha: $date2)");
+    print("Actividad 3: $activity3 (Fecha: $date3)");
+    print("Actividad 4: $activity4 (Fecha: $date4)");
+    print("Comentarios: $comments");
+    print("------------------------------------------");
   }
 }
