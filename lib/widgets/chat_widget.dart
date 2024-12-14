@@ -38,89 +38,97 @@ class _ChatWidgetState extends State<ChatWidget> {
   }
 
   Future<String> sendToMistralAPI(String message) async {
-    try {
-      // Obtén la API Key desde el archivo .env
-      final apiKey = dotenv.env['API_KEY'];
-
-      // Verifica que la API Key está configurada
-      if (apiKey == null || apiKey.isEmpty) {
-        print("Error: API_KEY no está configurada en el archivo .env");
-        return "Error: API_KEY no está configurada.";
-      }
-
-      // URL de la API de Mistral
-      final apiUrl = "https://api.mistral.ai/v1/chat/completions";
-
-      // Cuerpo de la solicitud
-      final body = jsonEncode({
-        "model": "mistral-large-latest", // Modelo especificado
-        "messages": [
-          {
-            "role": "user", // Define el rol como "user"
-            "content": "Actualiza los campos del formulario según las instrucciones. Responde solo con el formato:\n\n"
-                "Campo actualizado: [nombre del campo], Nuevo valor: [valor proporcionado]\n\n"
-                "Por ejemplo:\n\n"
-                "Usuario: Quiero que el título sea 'Proyecto Frutal'.\n"
-                "Tú: Campo actualizado: Título, Nuevo valor: Proyecto Frutal.\n\n"
-                "Aquí está la instrucción del usuario:\n\n$message"
-          }
-        ]
-      });
-
-      // Realiza la solicitud POST a la API
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $apiKey",
-        },
-        body: body,
-      );
-
-      // Imprime el estado de la respuesta para depuración
-      print("HTTP Status Code: ${response.statusCode}");
-      print("HTTP Response Body: ${response.body}");
-
-      if (response.statusCode == 200) {
-        // Decodifica la respuesta JSON
-        final data = jsonDecode(response.body);
-
-        // Extrae el contenido de la respuesta
-        if (data.containsKey("choices") && data["choices"].isNotEmpty) {
-          return data["choices"][0]["message"]["content"];
-        } else {
-          return "Error: Respuesta inesperada del modelo.";
-        }
-      } else {
-        return "Error: Falló la llamada a la API (Código ${response.statusCode}).";
-      }
-    } catch (e) {
-      print("Error al llamar a la API de Mistral: $e");
-      return "Error: Ocurrió un problema al procesar tu solicitud.";
+  try {
+    final apiKey = dotenv.env['API_KEY'];
+    if (apiKey == null || apiKey.isEmpty) {
+      print("Error: API_KEY no está configurada en el archivo .env");
+      return "Error: API_KEY no está configurada.";
     }
-  }
 
-  void parseMessageAndUpdateForm(String response) {
-    final titleRegex = RegExp(r'Campo actualizado: Título, Nuevo valor: (.+)');
-    final descriptionRegex = RegExp(r'Campo actualizado: Descripción, Nuevo valor: (.+)');
+    final apiUrl = "https://api.mistral.ai/v1/chat/completions";
 
-    final titleMatch = titleRegex.firstMatch(response);
-    final descriptionMatch = descriptionRegex.firstMatch(response);
-
+    // Contexto del formulario actual
     final formState = Provider.of<FormStateProvider>(context, listen: false);
 
-    // Actualiza el título si se encuentra en la respuesta
-    if (titleMatch != null) {
-      final title = titleMatch.group(1);
-      formState.updateTitle(title!);
-    }
+    final prompt = '''
+Eres un asistente que ayuda a personalizar un formulario. Actualmente, el formulario tiene los siguientes campos:
 
-    // Actualiza la descripción si se encuentra en la respuesta
-    if (descriptionMatch != null) {
-      final description = descriptionMatch.group(1);
-      formState.updateDescription(description!);
+- Título: ${formState.title ?? "Sin definir"}
+- Descripción: ${formState.description ?? "Sin definir"}
+
+El usuario te ha enviado este mensaje: "$message".
+
+Tu tarea es actualizar los campos relevantes en función de la solicitud del usuario. Responde en este formato:
+- "Campo actualizado: [nombre del campo], Nuevo valor: [valor actualizado]"
+
+Por ejemplo:
+Usuario: "Cambia el título a Proyecto X."
+Tú: "Campo actualizado: Título, Nuevo valor: Proyecto X."
+''';
+
+    final body = jsonEncode({
+      "messages": [
+        {"role": "system", "content": "Eres un asistente experto en formularios."},
+        {"role": "user", "content": prompt}
+      ],
+      "model": "mistral-large-latest",
+    });
+
+    final response = await http.post(
+      Uri.parse(apiUrl),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $apiKey",
+      },
+      body: body,
+    );
+
+    print("HTTP Status Code: ${response.statusCode}");
+    print("HTTP Response Body: ${response.body}");
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data.containsKey("choices") && data["choices"][0]["message"]["content"] != null) {
+        return data["choices"][0]["message"]["content"];
+      } else {
+        return "Error: Formato de respuesta inesperado.";
+      }
+    } else {
+      return "Error: Falló la llamada a la API (Código ${response.statusCode}).";
     }
+  } catch (e) {
+    print("Error al llamar a la API de Mistral: $e");
+    return "Error: Ocurrió un problema al procesar tu solicitud.";
   }
+}
+
+
+  void parseMessageAndUpdateForm(String response) {
+  final formState = Provider.of<FormStateProvider>(context, listen: false);
+
+  // Busca actualizaciones específicas de campos en la respuesta del bot
+  final titleRegex = RegExp(r'Campo actualizado: Título, Nuevo valor: (.+)');
+  final descriptionRegex =
+      RegExp(r'Campo actualizado: Descripción, Nuevo valor: (.+)');
+
+  final titleMatch = titleRegex.firstMatch(response);
+  final descriptionMatch = descriptionRegex.firstMatch(response);
+
+  if (titleMatch != null) {
+    final newTitle = titleMatch.group(1);
+    formState.updateTitle(newTitle!);
+  }
+
+  if (descriptionMatch != null) {
+    final newDescription = descriptionMatch.group(1);
+    formState.updateDescription(newDescription!);
+  }
+
+  // Imprime los valores actualizados para depuración
+  print("Título actualizado a: ${formState.title}");
+  print("Descripción actualizada a: ${formState.description}");
+}
+
 
   @override
   Widget build(BuildContext context) {

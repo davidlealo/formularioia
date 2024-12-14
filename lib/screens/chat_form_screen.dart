@@ -6,17 +6,19 @@ class ChatFormScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Chat & Form')),
+      appBar: AppBar(
+        title: Text('Chat & Form'),
+      ),
       body: Row(
         children: [
           Expanded(
             flex: 1,
-            child: ChatWidget(),
+            child: ChatWidget(), // Sin 'const'
           ),
           VerticalDivider(width: 1),
           Expanded(
             flex: 1,
-            child: FormWidget(),
+            child: FormWidget(), // Sin 'const'
           ),
         ],
       ),

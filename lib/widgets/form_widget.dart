@@ -12,34 +12,40 @@ class _FormWidgetState extends State<FormWidget> {
   final TextEditingController descriptionController = TextEditingController();
   final List<TextEditingController> activityControllers =
       List.generate(4, (_) => TextEditingController());
+  final List<TextEditingController> dateControllers =
+      List.generate(4, (_) => TextEditingController());
   final TextEditingController commentsController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    // Escucha los cambios desde el estado global y actualiza los campos
     final formState = Provider.of<FormStateProvider>(context, listen: false);
     formState.addListener(updateFormFields);
+    updateFormFields(); // Inicializa los valores al construir el widget
   }
 
   void updateFormFields() {
-    // Obtén el estado actualizado y actualiza los campos del formulario
     final formState = Provider.of<FormStateProvider>(context, listen: false);
     setState(() {
       titleController.text = formState.title ?? '';
       descriptionController.text = formState.description ?? '';
-      // Puedes agregar lógica para las actividades si es necesario
+      commentsController.text = formState.comments ?? '';
+      for (int i = 0; i < 4; i++) {
+        activityControllers[i].text =
+            formState.getProperty('activity${i + 1}') ?? '';
+        dateControllers[i].text = formState.getProperty('date${i + 1}') ?? '';
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(8.0),
       children: [
         TextField(
           controller: titleController,
-          decoration: InputDecoration(labelText: 'Título'),
+          decoration: const InputDecoration(labelText: 'Título'),
           onChanged: (value) {
             Provider.of<FormStateProvider>(context, listen: false)
                 .updateTitle(value);
@@ -47,7 +53,7 @@ class _FormWidgetState extends State<FormWidget> {
         ),
         TextField(
           controller: descriptionController,
-          decoration: InputDecoration(labelText: 'Descripción'),
+          decoration: const InputDecoration(labelText: 'Descripción'),
           onChanged: (value) {
             Provider.of<FormStateProvider>(context, listen: false)
                 .updateDescription(value);
@@ -57,22 +63,38 @@ class _FormWidgetState extends State<FormWidget> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Actividad ${i + 1}'),
-              TextField(
-                controller: activityControllers[i],
-                decoration: InputDecoration(labelText: 'Descripción'),
-                // Lógica adicional para actualizar actividades aquí
+              Padding(
+                padding: const EdgeInsets.only(top: 16.0),
+                child: Text('Actividad ${i + 1}'),
               ),
               TextField(
-                decoration: InputDecoration(labelText: 'Fecha'),
-                // Lógica adicional para actualizar fechas aquí
+                controller: activityControllers[i],
+                decoration: const InputDecoration(labelText: 'Descripción'),
+                onChanged: (value) {
+                  Provider.of<FormStateProvider>(context, listen: false)
+                      .setProperty('activity${i + 1}', value);
+                },
+              ),
+              TextField(
+                controller: dateControllers[i],
+                decoration: const InputDecoration(labelText: 'Fecha'),
+                onChanged: (value) {
+                  Provider.of<FormStateProvider>(context, listen: false)
+                      .setProperty('date${i + 1}', value);
+                },
               ),
             ],
           ),
-        TextField(
-          controller: commentsController,
-          decoration: InputDecoration(labelText: 'Comentarios'),
-          // Lógica para actualizar comentarios si es necesario
+        Padding(
+          padding: const EdgeInsets.only(top: 16.0),
+          child: TextField(
+            controller: commentsController,
+            decoration: const InputDecoration(labelText: 'Comentarios'),
+            onChanged: (value) {
+              Provider.of<FormStateProvider>(context, listen: false)
+                  .updateComments(value);
+            },
+          ),
         ),
       ],
     );
@@ -80,7 +102,6 @@ class _FormWidgetState extends State<FormWidget> {
 
   @override
   void dispose() {
-    // Elimina el listener al destruir el widget
     final formState = Provider.of<FormStateProvider>(context, listen: false);
     formState.removeListener(updateFormFields);
     super.dispose();
