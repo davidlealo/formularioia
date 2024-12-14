@@ -32,6 +32,8 @@ dependencies:
     sdk: flutter
   provider: ^6.0.5       # Para gestión del estado
   http: ^1.0.0           # Para las llamadas a la API
+  flutter_dotenv: ^5.0.2
+
 
 
   # The following adds the Cupertino Icons font to your application.
