@@ -18,7 +18,7 @@ class MistralService {
 
       // Prompt para guiar a Mistral
       final prompt = '''
-Eres un asistente que ayuda a personalizar un formulario. El formulario tiene estos campos:
+Eres un asistente que ayuda a personalizar un formulario. El formulario tiene los siguientes campos:
 
 1. Título: ${formState.title ?? "Sin definir"}
 2. Descripción: ${formState.description ?? "Sin definir"}
@@ -29,14 +29,13 @@ Eres un asistente que ayuda a personalizar un formulario. El formulario tiene es
    - Actividad 4: ${formState.activity4 ?? "Sin definir"} (${formState.date4 ?? "Sin fecha"})
 4. Comentarios: ${formState.comments ?? "Sin definir"}
 
-Tu tarea es interpretar las instrucciones del usuario para actualizar los campos del formulario. Responde con:
-- El campo actualizado.
-- El valor actualizado.
-- Preguntas adicionales si falta información.
+Tu tarea es interpretar las instrucciones del usuario para actualizar los campos del formulario. Responde de la siguiente manera:
+- Campo actualizado: [nombre del campo]
+- Nuevo valor: [valor proporcionado por el usuario]
 
-Por ejemplo:
-Usuario: "Quiero que el título sea 'Proyecto Innovador'."
-Tú: "Título actualizado a 'Proyecto Innovador'. ¿Quieres agregar una descripción?"
+Ejemplo:
+Usuario: "Quiero que el título sea 'Nuevo Proyecto'."
+Tú: "Campo actualizado: Título, Nuevo valor: Nuevo Proyecto."
 
 Aquí está la solicitud del usuario:
 "$userMessage"
